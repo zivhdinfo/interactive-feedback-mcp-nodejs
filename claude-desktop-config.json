@@ -3,7 +3,7 @@
     "interactive-feedback-mcp": {
       "command": "node",
       "args": [
-        "C:\\Users\\admin\\Desktop\\STMMO_PJ\\MCP\\interactive-feedback-mcp-nodejs\\server.js"
+        "/path/to/interactive-feedback-mcp-nodejs/server.js"
       ],
       "env": {
         "NODE_ENV": "production"

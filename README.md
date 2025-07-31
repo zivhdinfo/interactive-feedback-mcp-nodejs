@@ -123,7 +123,7 @@ Add to Cursor settings.json:
     "interactive-feedback-mcp": {
       "command": "node",
       "args": [
-        "C:\\Users\\admin\\Desktop\\STMMO_PJ\\MCP\\interactive-feedback-mcp-nodejs\\server.js"
+        "C:\\path\\to\\interactive-feedback-mcp-nodejs\\server.js"
       ],
       "env": {
         "NODE_ENV": "production"
@@ -149,7 +149,7 @@ Add to Claude Desktop config:
     "interactive-feedback-mcp": {
       "command": "node",
       "args": [
-        "C:\\Users\\admin\\Desktop\\STMMO_PJ\\MCP\\interactive-feedback-mcp-nodejs\\server.js"
+        "/path/to/interactive-feedback-mcp-nodejs/server.js"
       ],
       "env": {
         "NODE_ENV": "production"
