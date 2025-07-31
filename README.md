@@ -241,7 +241,7 @@ Contributions are welcome! Please read the contributing guidelines before submit
 
 For issues and questions:
 - GitHub Issues: [Create an issue](https://github.com/zivhdinfo/interactive-feedback-mcp-nodejs/issues)
-- Email: zivhdinfo@gmail.com
+- Email: nguyenhop530@gmail.com
 
 ---
 
@@ -488,7 +488,7 @@ Chào mừng các đóng góp! Vui lòng đọc hướng dẫn đóng góp trư�
 
 Đối với các vấn đề và câu hỏi:
 - GitHub Issues: [Tạo issue](https://github.com/zivhdinfo/interactive-feedback-mcp-nodejs/issues)
-- Email: zivhdinfo@gmail.com
+- Email: nguyenhop530@gmail.com
 
 ---
 
