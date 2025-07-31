@@ -14,6 +14,10 @@
 - [English](#english)
 - [Tiếng Việt](#tiếng-việt)
 
+## 📋 MCP Usage Rulesets / Bộ quy tắc sử dụng MCP
+- [English Ruleset](./rules/mcp-usage-rules-english.md) - Comprehensive usage rules for AI assistants
+- [Vietnamese Ruleset](./rules/mcp-usage-rules-vietnamese.md) - Quy tắc sử dụng toàn diện cho AI assistants
+
 ---
 
 # English
@@ -164,6 +168,33 @@ Add to Claude Desktop config:
 ### For Cline / Windsurf
 
 Use the same configuration format as above. Configure the server in the respective tool's MCP settings with `interactive-feedback-mcp` as the server identifier.
+
+## MCP Usage Rules for AI IDEs
+
+> 📋 **Detailed Rulesets Available**: For comprehensive usage guidelines, see the [English Ruleset](./rules/mcp-usage-rules-english.md) document.
+
+### When AI Assistants MUST Use Interactive Feedback
+
+#### 🔴 Critical Actions (ALWAYS Required)
+1. **Before making significant code changes** - Modifying multiple files or core functionality
+2. **Before running system commands** - Commands that affect system, install packages, or modify configurations
+3. **Before build/deploy operations** - `npm run build`, `docker build`, deployment scripts
+4. **Before package management** - Installing, updating, or removing dependencies
+5. **Before major refactoring** - Large-scale code restructuring or architecture changes
+6. **When encountering errors** - Need debugging guidance or error resolution clarification
+7. **Before finalizing responses** - To confirm completion and get user approval
+
+#### 🟡 Recommended Actions (Strongly Suggested)
+1. **When requirements are unclear** - Need clarification on user intentions
+2. **Before creating new files** - Configuration files, documentation, or new modules
+3. **When multiple solution approaches exist** - Let user choose preferred approach
+4. **Before making breaking changes** - Changes affecting existing functionality
+5. **When working with sensitive data** - Database operations, API keys, security-related code
+
+#### 🟢 Optional Actions (Use When Beneficial)
+1. **For progress updates** - On long-running tasks to keep user informed
+2. **When seeking optimization feedback** - Performance improvements or code quality suggestions
+3. **For educational purposes** - Explaining complex concepts or decisions
 
 ## Usage
 
@@ -411,6 +442,33 @@ Thêm vào cấu hình Claude Desktop:
 ### Cho Cline / Windsurf
 
 Áp dụng nguyên tắc cài đặt tương tự. Cấu hình lệnh server trong cài đặt MCP của công cụ tương ứng, sử dụng `interactive-feedback` làm định danh server.
+
+## Quy tắc sử dụng MCP cho AI IDEs
+
+> 📋 **Bộ quy tắc chi tiết có sẵn**: Để có hướng dẫn sử dụng toàn diện, xem tài liệu [Vietnamese Ruleset](./rules/mcp-usage-rules-vietnamese.md).
+
+### Khi nào AI Assistants BẮT BUỘC sử dụng Interactive Feedback
+
+#### 🔴 Hành động quan trọng (LUÔN LUÔN bắt buộc)
+1. **Trước khi thực hiện thay đổi code quan trọng** - Sửa đổi nhiều file hoặc chức năng cốt lõi
+2. **Trước khi chạy lệnh hệ thống** - Lệnh ảnh hưởng đến hệ thống, cài đặt package, hoặc sửa đổi cấu hình
+3. **Trước khi thực hiện build/deploy** - `npm run build`, `docker build`, script triển khai
+4. **Trước khi quản lý package** - Cài đặt, cập nhật, hoặc gỡ bỏ dependencies
+5. **Trước khi refactoring lớn** - Tái cấu trúc code quy mô lớn hoặc thay đổi kiến trúc
+6. **Khi gặp lỗi** - Cần hướng dẫn debug hoặc làm rõ về giải quyết lỗi
+7. **Trước khi hoàn thành phản hồi** - Để xác nhận hoàn thành và nhận sự chấp thuận của người dùng
+
+#### 🟡 Hành động được khuyến nghị (Rất nên làm)
+1. **Khi yêu cầu không rõ ràng** - Cần làm rõ ý định của người dùng
+2. **Trước khi tạo file mới** - File cấu hình, tài liệu, hoặc module mới
+3. **Khi có nhiều cách tiếp cận giải pháp** - Để người dùng chọn cách tiếp cận ưa thích
+4. **Trước khi thực hiện thay đổi breaking** - Thay đổi có thể ảnh hưởng đến chức năng hiện có
+5. **Khi làm việc với dữ liệu nhạy cảm** - Thao tác database, API keys, hoặc code liên quan bảo mật
+
+#### 🟢 Hành động tùy chọn (Sử dụng khi có lợi)
+1. **Để cập nhật tiến độ** - Trong các tác vụ chạy lâu để thông báo cho người dùng
+2. **Khi tìm kiếm phản hồi tối ưu hóa** - Cải thiện hiệu suất hoặc gợi ý chất lượng code
+3. **Cho mục đích giáo dục** - Giải thích các khái niệm hoặc quyết định phức tạp
 
 ## Sử dụng
 
