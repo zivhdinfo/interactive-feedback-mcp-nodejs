@@ -74,7 +74,7 @@ By guiding the assistant to check in with the user instead of branching out into
 - **Browser**: Chrome 90+, Firefox 88+, Safari 14+, Edge 90+
 - **RAM**: 512MB available memory
 - **Disk**: 100MB free space
-- **Network**: Port access for local server (auto-assigned)
+- **Network**: Port access for local server (fixed port 3636)
 
 ### Supported Operating Systems
 - ✅ Windows 10/11
@@ -217,7 +217,7 @@ node server.js
 
 ### Common Issues
 
-1. **Port conflicts**: Server auto-assigns available ports
+1. **Port conflicts**: Server uses fixed port 3636 (ensure it's available)
 2. **Permission errors**: Ensure Node.js has proper permissions
 3. **Browser not opening**: Check default browser settings
 4. **WebSocket connection failed**: Verify firewall settings
@@ -303,7 +303,7 @@ Bằng cách hướng dẫn trợ lý kiểm tra với người dùng thay vì p
 - **Trình duyệt**: Chrome 90+, Firefox 88+, Safari 14+, Edge 90+
 - **RAM**: 512MB bộ nhớ khả dụng
 - **Ổ đĩa**: 100MB dung lượng trống
-- **Mạng**: Truy cập port cho local server (tự động gán)
+- **Mạng**: Truy cập port cho local server (port cố định 3636)
 
 ### Hệ điều hành được hỗ trợ
 - ✅ Windows 10/11
@@ -464,7 +464,7 @@ node server.js
 
 ### Vấn đề thường gặp
 
-1. **Xung đột port**: Server tự động gán port khả dụng
+1. **Xung đột port**: Server sử dụng port cố định 3636 (đảm bảo port khả dụng)
 2. **Lỗi quyền**: Đảm bảo Node.js có quyền phù hợp
 3. **Trình duyệt không mở**: Kiểm tra cài đặt trình duyệt mặc định
 4. **Kết nối WebSocket thất bại**: Xác minh cài đặt firewall

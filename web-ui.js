@@ -45,7 +45,7 @@ class WebUIServer {
         this.projectDirectory = projectDirectory || process.cwd();
         this.prompt = prompt || 'I implemented the changes you requested.';
         this.outputFile = outputFile;
-        this.port = 0; // Auto-assigned
+        this.port = 3636; // Fixed port
         
         // Initialize Express app and WebSocket server
         this.app = express();
@@ -157,7 +157,7 @@ class WebUIServer {
      */
     async start() {
         return new Promise((resolve, reject) => {
-            this.server = this.app.listen(0, 'localhost', (error) => {
+            this.server = this.app.listen(3636, 'localhost', (error) => {
                 if (error) {
                     reject(error);
                     return;
