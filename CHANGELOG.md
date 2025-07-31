@@ -5,7 +5,7 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [1.0.1] - 2024-12-19
+## [1.0.1] - 2025-07-31 20:12
 
 ### Changed
 - 🔧 **Fixed port configuration**: Changed from auto-assigned port to fixed port 3636
@@ -16,7 +16,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - ⚡ **Port consistency**: Eliminates random port assignment for better predictability
 - 📖 **Documentation accuracy**: Updated all references to use generic path placeholders
 
-## [1.0.0] - 2024-12-19
+## [1.0.0] - 2025-07-31 20:10
 
 ### Added
 - ✅ **Initial Node.js implementation** of Interactive Feedback MCP
@@ -62,61 +62,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Original Concept**: [Fábio Ferreira](https://github.com/fabiomlferreira) - [Interactive Feedback MCP (Python)](https://github.com/noopstudios/interactive-feedback-mcp)
 - **Node.js Implementation**: [Zivhd](https://github.com/zivhdinfo/) - STMMO Project
 - **Inspiration**: [dotcursorrules.com](https://dotcursorrules.com) for AI development enhancements
-
----
-
-## Development Timeline
-
-### Task 1: Project Setup (Completed)
-- ✅ Created project structure
-- ✅ Configured package.json with dependencies
-- ✅ Set up development environment
-
-### Task 2: Configuration Manager (Completed)
-- ✅ Implemented JSON-based config storage
-- ✅ Per-project configuration support
-- ✅ Default configuration handling
-- ✅ Cross-platform path resolution
-
-### Task 3: Process Manager (Completed)
-- ✅ Command execution with spawn
-- ✅ Real-time output streaming
-- ✅ Process lifecycle management
-- ✅ Error handling and logging
-
-### Task 4: MCP Server Core (Completed)
-- ✅ MCP protocol implementation
-- ✅ Tool registration and handling
-- ✅ JSON-RPC communication
-- ✅ Error handling and validation
-
-### Task 5: Web UI Server (Completed)
-- ✅ Express.js server setup
-- ✅ WebSocket integration
-- ✅ API endpoints for config and commands
-- ✅ Cross-platform browser opening
-- ✅ Auto-assigned port handling
-
-### Task 6: Frontend UI (Completed)
-- ✅ Responsive HTML structure
-- ✅ Dark theme CSS with animations
-- ✅ JavaScript class-based architecture
-- ✅ WebSocket client implementation
-- ✅ Real-time UI updates
-
-### Task 7: Testing & Integration (Completed)
-- ✅ Manual testing with demo scenarios
-- ✅ Cross-platform compatibility testing
-- ✅ Integration testing with MCP clients
-- ✅ Performance optimization
-
-### Task 8: Documentation & Deployment (Completed)
-- ✅ Comprehensive README.md
-- ✅ MIT License with proper attribution
-- ✅ Changelog documentation
-- ✅ Installation and usage guides
-- ✅ API documentation
-- ✅ Troubleshooting guides
 
 ---
 
