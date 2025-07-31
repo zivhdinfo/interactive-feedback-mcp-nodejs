@@ -1,0 +1,18 @@
+{
+  "mcpServers": {
+    "interactive-feedback-mcp": {
+      "command": "node",
+      "args": ["server.js"],
+      "env": {
+        "NODE_ENV": "production"
+      }
+    }
+  },
+  "globalShortcut": "Ctrl+Shift+M",
+  "autoRestart": true,
+  "timeout": 30000,
+  "logging": {
+    "level": "info",
+    "file": "mcp.log"
+  }
+}

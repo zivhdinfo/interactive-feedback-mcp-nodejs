@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Interactive Feedback MCP</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <div class="header-top">
+                <h1 data-lang-key="title">Interactive Feedback MCP</h1>
+                <div class="language-switcher">
+                    <button id="lang-toggle" class="btn btn-language" title="Switch Language / Chuyển đổi ngôn ngữ">
+                        <span id="lang-display">EN</span>
+                    </button>
+                </div>
+            </div>
+            <div id="project-directory" class="project-path"></div>
+        </header>
+        
+        <main>
+            <!-- Toggle Command Section Button -->
+            <div class="toggle-section">
+                <button id="toggle-command-btn" class="btn btn-secondary" data-lang-key="toggleCommand" title="Show/Hide command execution section">
+                    <span class="help-icon">?</span>
+                    Show Command Section
+                </button>
+            </div>
+
+            <!-- Command Section (initially hidden) -->
+            <section id="command-section" class="command-section hidden">
+                <div class="command-input-group">
+                    <input type="text" id="command-input" data-lang-key="commandPlaceholder" placeholder="Enter command to run..." class="command-input" title="Type system commands to execute">
+                    <button id="run-btn" class="btn btn-primary" data-lang-key="runButton" title="Execute the command">
+                        <span class="help-icon">?</span>
+                        Run
+                    </button>
+                </div>
+                
+                <div class="command-options">
+                    <label class="checkbox-label" title="Automatically run saved command when page loads">
+                        <input type="checkbox" id="auto-execute-checkbox">
+                        <span data-lang-key="autoExecute">Auto-execute on load</span>
+                        <span class="help-icon">?</span>
+                    </label>
+                    <button id="save-config-btn" class="btn btn-secondary" data-lang-key="saveConfig" title="Save current command and settings">
+                        <span class="help-icon">?</span>
+                        Save Config
+                    </button>
+                </div>
+                
+                <div class="console-section">
+                    <div class="console-header">
+                        <h3 data-lang-key="consoleOutput" title="Command execution results">Console Output <span class="help-icon">?</span></h3>
+                        <button id="clear-console-btn" class="btn btn-danger btn-small" data-lang-key="clearConsole" title="Clear all console output">
+                            <span class="help-icon">?</span>
+                            Clear
+                        </button>
+                    </div>
+                    <div id="console-output" class="console-output"></div>
+                </div>
+            </section>
+
+            <!-- Feedback Section -->
+            <section class="feedback-section">
+                <div class="prompt-display">
+                    <h2 data-lang-key="feedbackPrompt" title="AI assistant's request for feedback">Feedback Prompt <span class="help-icon">?</span></h2>
+                    <div id="prompt-text" class="prompt-text" data-lang-key="loadingPrompt">Loading prompt...</div>
+                </div>
+                
+                <div class="feedback-form">
+                    <textarea id="feedback-textarea" data-lang-key="feedbackPlaceholder" placeholder="Enter your feedback here..." rows="6" title="Provide detailed feedback to the AI assistant"></textarea>
+                    <button id="submit-feedback-btn" class="btn btn-success" data-lang-key="submitFeedback" title="Send feedback and close interface">
+                        <span class="help-icon">?</span>
+                        Submit Feedback
+                    </button>
+                </div>
+            </section>
+        </main>
+        
+        <footer>
+            <p>
+                Created with ❤️ by <a href="https://github.com/zivhdinfo/" target="_blank">Zivhd</a> | 
+                Based on <a href="https://github.com/noopstudios/interactive-feedback-mcp" target="_blank">Interactive Feedback MCP (Python)</a> by Fábio Ferreira
+            </p>
+        </footer>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>

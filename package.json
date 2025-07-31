@@ -1,0 +1,53 @@
+{
+  "name": "interactive-feedback-mcp-nodejs",
+  "version": "1.0.0",
+  "description": "Node.js implementation of Interactive Feedback MCP with modern web-based UI",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node server.js",
+    "web-ui": "node web-ui.js",
+    "health-check": "node server.js --health-check",
+    "lint": "echo 'Linting not configured yet'",
+    "format": "echo 'Formatting not configured yet'"
+  },
+  "keywords": [
+    "mcp",
+    "model-context-protocol",
+    "interactive",
+    "feedback",
+    "nodejs",
+    "web-ui",
+    "express",
+    "websocket",
+    "ai-tools",
+    "cursor",
+    "claude",
+    "human-in-the-loop",
+    "dark-theme",
+    "responsive",
+    "cross-platform"
+  ],
+  "author": {
+    "name": "Zivhd",
+    "email": "nguyenhop530@gmail.com",
+    "url": "https://github.com/zivhdinfo/"
+  },
+  "license": "MIT",
+  "dependencies": {
+    "express": "^4.18.2",
+    "ws": "^8.14.2",
+    "fs-extra": "^11.1.1"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/zivhdinfo/interactive-feedback-mcp-nodejs.git"
+  },
+  "bugs": {
+    "url": "https://github.com/zivhdinfo/interactive-feedback-mcp-nodejs/issues"
+  },
+  "homepage": "https://github.com/zivhdinfo/interactive-feedback-mcp-nodejs#readme"
+}
