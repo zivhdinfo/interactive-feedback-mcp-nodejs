@@ -115,49 +115,25 @@ node server.js
 
 ### For Cursor IDE
 
-#### Method 1: Using settings.json (Recommended)
+Add to Cursor settings.json:
 
-1. Open Cursor Settings (Ctrl+,)
-2. Click "Open Settings (JSON)" in the top right
-3. Add the MCP server configuration:
-   ```json
-   {
-     "mcp.servers": {
-       "interactive-feedback-mcp": {
-         "command": "node",
-         "args": ["server.js"],
-         "cwd": "C:\\path\\to\\interactive-feedback-mcp-nodejs",
-         "env": {
-           "NODE_ENV": "production"
-         }
-       }
-     }
-   }
-   ```
+```json
+{
+  "mcpServers": {
+    "interactive-feedback-mcp": {
+      "command": "node",
+      "args": [
+        "C:\\Users\\admin\\Desktop\\STMMO_PJ\\MCP\\interactive-feedback-mcp-nodejs\\server.js"
+      ],
+      "env": {
+        "NODE_ENV": "production"
+      }
+    }
+  }
+}
+```
 
-#### Method 2: Using configuration file
-
-1. Copy the provided `cursor-mcp-config.json` content
-2. Paste it into your Cursor settings.json file
-3. Update the `cwd` path to match your installation directory
-
-#### Method 3: Direct UI configuration
-
-1. Open Cursor Settings (Ctrl+,)
-2. Search for "MCP Servers"
-3. Click "Add Server" and configure:
-   - **Server Name**: `interactive-feedback-mcp`
-   - **Command**: `node`
-   - **Arguments**: `server.js`
-   - **Working Directory**: `C:\\path\\to\\interactive-feedback-mcp-nodejs`
-   - **Environment Variables**: `NODE_ENV=production`
-
-#### Verification
-
-After configuration, restart Cursor and verify the MCP server is loaded:
-1. Open Command Palette (Ctrl+Shift+P)
-2. Type "MCP" to see available MCP commands
-3. Look for "interactive_feedback" tool in AI assistant suggestions
+**Note**: Update the path in `args` to match your installation directory.
 
 ### For Claude Desktop
 
@@ -170,18 +146,24 @@ Add to Claude Desktop config:
 ```json
 {
   "mcpServers": {
-    "interactive-feedback": {
+    "interactive-feedback-mcp": {
       "command": "node",
-      "args": ["server.js"],
-      "cwd": "C:/path/to/interactive-feedback-mcp-nodejs"
+      "args": [
+        "C:\\Users\\admin\\Desktop\\STMMO_PJ\\MCP\\interactive-feedback-mcp-nodejs\\server.js"
+      ],
+      "env": {
+        "NODE_ENV": "production"
+      }
     }
   }
 }
 ```
 
+**Note**: Update the path in `args` to match your installation directory.
+
 ### For Cline / Windsurf
 
-Similar setup principles apply. Configure the server command in the respective tool's MCP settings, using `interactive-feedback` as the server identifier.
+Use the same configuration format as above. Configure the server in the respective tool's MCP settings with `interactive-feedback-mcp` as the server identifier.
 
 ## Usage
 
