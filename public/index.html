@@ -3,89 +3,114 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Interactive Feedback MCP</title>
+    <title>Interactive Feedback MCP Terminal</title>
     <link rel="stylesheet" href="style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+    <!-- Markdown support libraries -->
+    <script src="https://cdn.jsdelivr.net/npm/showdown@2.1.0/dist/showdown.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/dompurify@3.0.5/dist/purify.min.js"></script>
+    <!-- Highlight.js for code syntax highlighting -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
 </head>
 <body>
-    <div class="container">
-        <header>
-            <div class="header-top">
-                <h1 data-lang-key="title">Interactive Feedback MCP</h1>
-                <div class="language-switcher">
-                    <button id="lang-toggle" class="btn btn-language" title="Switch Language / Chuyển đổi ngôn ngữ">
-                        <span id="lang-display">EN</span>
-                    </button>
-                </div>
+    <div class="terminal-container">
+        <!-- Terminal Header -->
+        <div class="terminal-header">
+            <div class="terminal-controls">
+                <span class="control-btn close"></span>
+                <span class="control-btn minimize"></span>
+                <span class="control-btn maximize"></span>
             </div>
-            <div id="project-directory" class="project-path"></div>
-        </header>
-        
-        <main>
-            <!-- Toggle Command Section Button -->
-            <div class="toggle-section">
-                <button id="toggle-command-btn" class="btn btn-secondary" data-lang-key="toggleCommand" title="Show/Hide command execution section">
-                    <span class="help-icon">?</span>
-                    Show Command Section
+            <div class="terminal-title">
+                <span data-lang-key="title">Interactive Feedback MCP Terminal</span>
+            </div>
+            <div class="terminal-actions">
+                <button id="lang-toggle" class="terminal-btn" title="Switch Language / Chuyển đổi ngôn ngữ">
+                    <span id="lang-display">EN</span>
                 </button>
             </div>
-
-            <!-- Command Section (initially hidden) -->
-            <section id="command-section" class="command-section hidden">
-                <div class="command-input-group">
-                    <input type="text" id="command-input" data-lang-key="commandPlaceholder" placeholder="Enter command to run..." class="command-input" title="Type system commands to execute">
-                    <button id="run-btn" class="btn btn-primary" data-lang-key="runButton" title="Execute the command">
-                        <span class="help-icon">?</span>
-                        Run
-                    </button>
-                </div>
-                
-                <div class="command-options">
-                    <label class="checkbox-label" title="Automatically run saved command when page loads">
-                        <input type="checkbox" id="auto-execute-checkbox">
-                        <span data-lang-key="autoExecute">Auto-execute on load</span>
-                        <span class="help-icon">?</span>
-                    </label>
-                    <button id="save-config-btn" class="btn btn-secondary" data-lang-key="saveConfig" title="Save current command and settings">
-                        <span class="help-icon">?</span>
-                        Save Config
-                    </button>
-                </div>
-                
-                <div class="console-section">
-                    <div class="console-header">
-                        <h3 data-lang-key="consoleOutput" title="Command execution results">Console Output <span class="help-icon">?</span></h3>
-                        <button id="clear-console-btn" class="btn btn-danger btn-small" data-lang-key="clearConsole" title="Clear all console output">
-                            <span class="help-icon">?</span>
-                            Clear
+        </div>
+        
+        <!-- Terminal Body -->
+        <div class="terminal-body">
+            <!-- Project Directory Display -->
+            <div class="terminal-line">
+                <span class="prompt">~/project:</span>
+                <span id="project-directory" class="project-path">Loading...</span>
+            </div>
+            
+            <!-- Command Input Section -->
+            <div class="terminal-section">
+                <div class="section-header">
+                    <span class="section-title">Command Execution</span>
+                    <div class="section-controls">
+                        <button id="toggle-command-btn" class="terminal-btn small" data-lang-key="toggleCommand">
+                            <span data-lang-key="showCommand">Show</span>
                         </button>
                     </div>
-                    <div id="console-output" class="console-output"></div>
-                </div>
-            </section>
-
-            <!-- Feedback Section -->
-            <section class="feedback-section">
-                <div class="prompt-display">
-                    <h2 data-lang-key="feedbackPrompt" title="AI assistant's request for feedback">Feedback Prompt <span class="help-icon">?</span></h2>
-                    <div id="prompt-text" class="prompt-text" data-lang-key="loadingPrompt">Loading prompt...</div>
                 </div>
                 
-                <div class="feedback-form">
-                    <textarea id="feedback-textarea" data-lang-key="feedbackPlaceholder" placeholder="Enter your feedback here..." rows="6" title="Provide detailed feedback to the AI assistant"></textarea>
-                    <button id="submit-feedback-btn" class="btn btn-success" data-lang-key="submitFeedback" title="Send feedback and close interface">
-                        <span class="help-icon">?</span>
-                        Submit Feedback
-                    </button>
+                <div id="command-section" class="command-panel hidden">
+                    <div class="command-line">
+                        <span class="prompt">$</span>
+                        <input type="text" id="command-input" data-lang-key="commandPlaceholder" placeholder="Enter command to run..." class="terminal-input">
+                        <button id="run-btn" class="terminal-btn" data-lang-key="runButton">Run</button>
+                    </div>
+                    
+                    <div class="command-options">
+                        <label class="terminal-checkbox">
+                            <input type="checkbox" id="auto-execute-checkbox">
+                            <span data-lang-key="autoExecute">Auto-execute on load</span>
+                        </label>
+                        <button id="save-config-btn" class="terminal-btn small" data-lang-key="saveConfig">Save Config</button>
+                    </div>
+                    
+                    <!-- Console Output -->
+                    <div class="console-window">
+                        <div class="console-header">
+                            <span data-lang-key="consoleOutput">Console Output</span>
+                            <button id="clear-console-btn" class="terminal-btn small danger" data-lang-key="clearConsole">Clear</button>
+                        </div>
+                        <div id="console-output" class="console-content"></div>
+                    </div>
                 </div>
-            </section>
-        </main>
-        
-        <footer>
-            <p>
-                Created with ❤️ by <a href="https://github.com/zivhdinfo/" target="_blank">Zivhd</a> | 
-                Based on <a href="https://github.com/noopstudios/interactive-feedback-mcp" target="_blank">Interactive Feedback MCP (Python)</a> by Fábio Ferreira
-            </p>
-        </footer>
+            </div>
+
+            <!-- Feedback Section -->
+            <div class="terminal-section">
+                <div class="section-header">
+                    <span class="section-title" data-lang-key="feedbackPrompt">Feedback Prompt</span>
+                </div>
+                
+                <div class="feedback-panel">
+                    <div class="prompt-window">
+                        <div id="prompt-text" class="prompt-content" data-lang-key="loadingPrompt">Loading prompt...</div>
+                    </div>
+                    
+                    <div class="feedback-input-area">
+                        <div class="terminal-line">
+                            <span class="prompt">feedback></span>
+                            <span class="cursor-blink">_</span>
+                        </div>
+                        <textarea id="feedback-textarea" data-lang-key="feedbackPlaceholder" placeholder="Enter your feedback here..." class="terminal-textarea"></textarea>
+                        <div class="feedback-actions">
+                            <button id="submit-feedback-btn" class="terminal-btn success" data-lang-key="submitFeedback">Submit Feedback</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Terminal Footer -->
+            <div class="terminal-footer">
+                <span class="footer-info">
+                    Created with ❤️ by <a href="https://github.com/zivhdinfo/" target="_blank">Zivhd</a> | 
+                    Based on <a href="https://github.com/noopstudios/interactive-feedback-mcp" target="_blank">Interactive Feedback MCP</a>
+                </span>
+            </div>
+        </div>
     </div>
 
     <script src="script.js"></script>

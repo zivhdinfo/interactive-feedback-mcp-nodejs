@@ -76,15 +76,15 @@ class FeedbackUI {
                 e.preventDefault();
                 e.stopPropagation();
                 
-                console.log('Language toggle clicked, current:', currentLanguage);
+        
                 const newLang = currentLanguage === 'en' ? 'vi' : 'en';
-                console.log('Switching to:', newLang);
+        
                 
                 currentLanguage = newLang;
                 updateLanguage();
                 saveLanguagePreference();
                 
-                console.log('Language switch completed');
+        
             });
         }
         
@@ -161,10 +161,20 @@ class FeedbackUI {
                     this.elements.projectDirectory.textContent = data.projectDirectory;
                 }
                 
-                // Update prompt display
+                // Update prompt display with markdown support
                 if (this.elements.promptText) {
                     if (data.prompt && data.prompt.trim() !== '') {
-                        this.elements.promptText.textContent = data.prompt;
+                        // Process prompt with markdown support
+                        const processedPrompt = processFeedbackWithMarkdown(data.prompt);
+                        this.elements.promptText.innerHTML = processedPrompt;
+                        
+                        // Add scroll functionality for long content
+                        const promptContainer = this.elements.promptText.parentElement;
+                        if (promptContainer) {
+                            promptContainer.style.maxHeight = '300px';
+                            promptContainer.style.overflowY = 'auto';
+                            promptContainer.style.scrollBehavior = 'smooth';
+                        }
                     } else {
                         // Fallback if no prompt provided
                         this.elements.promptText.textContent = translations[currentLanguage] ? 
@@ -257,7 +267,7 @@ class FeedbackUI {
             this.ws = new WebSocket(wsUrl);
             
             this.ws.onopen = () => {
-                console.log('WebSocket connected');
+        
             };
             
             this.ws.onmessage = (event) => {
@@ -270,7 +280,7 @@ class FeedbackUI {
             };
             
             this.ws.onclose = () => {
-                console.log('WebSocket disconnected');
+        
                 // Auto-reconnect logic
                 setTimeout(() => {
                     this.connectWebSocket();
@@ -310,7 +320,7 @@ class FeedbackUI {
                 break;
                 
             default:
-                console.log('Unknown WebSocket message type:', message.type);
+    
         }
     }
     
@@ -341,15 +351,19 @@ class FeedbackUI {
         
         if (this.elements.toggleCommandBtn) {
             // Update button text with current language
-            const key = this.isCommandSectionVisible ? 'hideCommand' : 'toggleCommand';
-            if (translations[currentLanguage] && translations[currentLanguage][key]) {
+            const key = this.isCommandSectionVisible ? 'hideCommand' : 'showCommand';
+            const toggleText = this.elements.toggleCommandBtn.querySelector('[data-lang-key]');
+            
+            if (toggleText) {
+                // Update the text span with proper data-lang-key
+                toggleText.textContent = translations[currentLanguage][key] || (this.isCommandSectionVisible ? 'Hide' : 'Show');
+                toggleText.setAttribute('data-lang-key', key);
+            } else {
+                // Fallback for buttons without structured text
                 const helpIcon = this.elements.toggleCommandBtn.querySelector('.help-icon');
                 const helpIconHtml = helpIcon ? helpIcon.outerHTML : '';
-                this.elements.toggleCommandBtn.innerHTML = helpIconHtml + translations[currentLanguage][key];
-            } else {
-                this.elements.toggleCommandBtn.textContent = this.isCommandSectionVisible 
-                    ? 'Hide Command Section' 
-                    : 'Show Command Section';
+                const buttonText = translations[currentLanguage][key] || (this.isCommandSectionVisible ? 'Hide Command Section' : 'Show Command Section');
+                this.elements.toggleCommandBtn.innerHTML = helpIconHtml + buttonText;
             }
         }
     }
@@ -592,14 +606,165 @@ document.addEventListener('DOMContentLoaded', () => {
             feedbackTextarea.focus();
         }, 500);
     }
+    
+    // Initialize markdown support
+    initializeMarkdownSupport();
 });
+
+/**
+  * Initialize markdown support for terminal interface
+  */
+ function initializeMarkdownSupport() {
+     // Add markdown rendering capabilities
+     if (typeof showdown !== 'undefined') {
+         // Initialize showdown converter with options
+         window.markdownConverter = new showdown.Converter({
+             tables: true,
+             strikethrough: true,
+             tasklists: true,
+             ghCodeBlocks: true,
+             smoothLivePreview: true,
+             simpleLineBreaks: true,
+             requireSpaceBeforeHeadingText: true
+         });
+     
+     }
+     
+     // Add markdown support hint
+     addMarkdownPreviewToggle();
+     
+     // Initialize syntax highlighting if available
+     if (typeof hljs !== 'undefined') {
+         hljs.highlightAll();
+     }
+ }
+
+/**
+  * Add markdown support to feedback textarea
+  */
+ function addMarkdownPreviewToggle() {
+     // Markdown support is now integrated without UI hints
+     // This function is kept for compatibility but no longer adds UI elements
+
+ }
+
+/**
+  * Render markdown text to HTML with proper line break handling
+  * @param {string} markdownText - The markdown text to render
+  * @returns {string} - The rendered HTML
+  */
+ function renderMarkdown(markdownText) {
+     if (!markdownText.trim()) {
+         return '<p class="text-gray-500">No content to preview</p>';
+     }
+     
+     // Handle double line breaks (\n\n) for paragraph separation
+     markdownText = markdownText.replace(/\\n\\n/g, '\n\n');
+     markdownText = markdownText.replace(/\\n/g, '\n');
+     
+     // Use showdown library if available, otherwise basic formatting
+     if (window.markdownConverter) {
+         const htmlContent = window.markdownConverter.makeHtml(markdownText);
+         return `<div class="markdown-content">${htmlContent}</div>`;
+     } else {
+         // Basic markdown-like formatting
+         const htmlContent = basicMarkdownRender(markdownText);
+         return `<div class="markdown-content">${htmlContent}</div>`;
+     }
+ }
+
+/**
+  * Basic markdown rendering fallback with proper line break handling
+  * @param {string} text - The text to format
+  * @returns {string} - The formatted HTML
+  */
+ function basicMarkdownRender(text) {
+     return text
+         // Headers
+         .replace(/^### (.*$)/gim, '<h3>$1</h3>')
+         .replace(/^## (.*$)/gim, '<h2>$1</h2>')
+         .replace(/^# (.*$)/gim, '<h1>$1</h1>')
+         // Bold
+         .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+         // Italic
+         .replace(/\*(.*?)\*/g, '<em>$1</em>')
+         // Code blocks
+         .replace(/```([\s\S]*?)```/g, '<pre><code>$1</code></pre>')
+         // Inline code
+         .replace(/`(.*?)`/g, '<code>$1</code>')
+         // Links
+         .replace(/\[([^\]]+)\]\(([^\)]+)\)/g, '<a href="$2" target="_blank">$1</a>')
+         // Double line breaks for paragraphs
+         .replace(/\n\n/g, '</p><p>')
+         // Single line breaks
+         .replace(/\n/g, '<br>')
+         // Wrap in paragraph tags
+         .replace(/^/, '<p>')
+         .replace(/$/, '</p>')
+         // Clean up empty paragraphs
+         .replace(/<p><\/p>/g, '');
+ }
+
+/**
+  * Enhanced console output with markdown support
+  * @param {string} content - The content to display
+  * @param {boolean} isMarkdown - Whether to render as markdown
+  */
+ function updateConsoleWithMarkdown(content, isMarkdown = false) {
+     const consoleOutput = document.getElementById('console-output');
+     if (!consoleOutput) return;
+     
+     if (isMarkdown) {
+         consoleOutput.innerHTML = renderMarkdown(content);
+     } else {
+         consoleOutput.textContent = content;
+     }
+     
+     // Scroll to bottom
+     consoleOutput.scrollTop = consoleOutput.scrollHeight;
+     
+     // Highlight code blocks if hljs is available
+     if (typeof hljs !== 'undefined') {
+         consoleOutput.querySelectorAll('pre code').forEach((block) => {
+             hljs.highlightElement(block);
+         });
+     }
+ }
+ 
+ /**
+  * Process feedback content with markdown support
+  * @param {string} feedbackText - The feedback text to process
+  * @returns {string} - The processed feedback content
+  */
+ function processFeedbackWithMarkdown(feedbackText) {
+     if (!feedbackText.trim()) {
+         return feedbackText;
+     }
+     
+     // Handle escape sequences for line breaks
+     let processedText = feedbackText
+         .replace(/\\n\\n/g, '\n\n')
+         .replace(/\\n/g, '\n');
+     
+     // Check if content contains markdown syntax
+     const hasMarkdown = /[*_`#\[\]]/g.test(processedText) || /```/g.test(processedText);
+     
+     if (hasMarkdown) {
+         // Return markdown-rendered content
+         return renderMarkdown(processedText);
+     } else {
+         // Return plain text with proper line breaks
+         return processedText.replace(/\n\n/g, '<br><br>').replace(/\n/g, '<br>');
+     }
+ }
 
 // Language translations
 const translations = {
     en: {
-        title: 'Interactive Feedback MCP',
-        toggleCommand: 'Show Command Section',
-        hideCommand: 'Hide Command Section',
+        title: 'Interactive Feedback MCP Terminal',
+        toggleCommand: 'Toggle Command Section',
+        showCommand: 'Show',
+        hideCommand: 'Hide',
         commandPlaceholder: 'Enter command to run...',
         runButton: 'Run',
         autoExecute: 'Auto-execute on load',
@@ -612,9 +777,10 @@ const translations = {
         submitFeedback: 'Submit Feedback'
     },
     vi: {
-        title: 'Interactive Feedback MCP',
-        toggleCommand: 'Hiển thị Phần Lệnh',
-        hideCommand: 'Ẩn Phần Lệnh',
+        title: 'Interactive Feedback MCP Terminal',
+        toggleCommand: 'Chuyển đổi Phần Lệnh',
+        showCommand: 'Hiện',
+        hideCommand: 'Ẩn',
         commandPlaceholder: 'Nhập lệnh để chạy...',
         runButton: 'Chạy',
         autoExecute: 'Tự động thực thi khi tải',
@@ -656,7 +822,7 @@ function switchLanguage(lang) {
  * Update interface according to selected language
  */
 function updateLanguage() {
-    console.log('updateLanguage called with:', currentLanguage);
+
     const langData = translations[currentLanguage];
     
     if (!langData) {
@@ -673,7 +839,7 @@ function updateLanguage() {
     const langDisplay = document.getElementById('lang-display');
     if (langDisplay) {
         langDisplay.textContent = currentLanguage.toUpperCase();
-        console.log('Updated language display to:', currentLanguage.toUpperCase());
+    
     }
     
     // Update all translatable elements except prompt text
@@ -733,7 +899,7 @@ function updateLanguage() {
         document.body.style.opacity = '1';
     }, 100);
     
-    console.log('updateLanguage completed');
+    
 }
 
 /**
@@ -887,7 +1053,7 @@ async function deleteConfiguration() {
 
 function displayConfigInUI(config) {
     // Mock display config in UI
-    console.log('Displaying config:', config);
+    
 }
 
 function getConfigFromUI() {
@@ -904,7 +1070,7 @@ function getConfigFromUI() {
 
 function clearConfigUI() {
     // Mock clear config UI
-    console.log('Config UI cleared');
+    
 }
 
 // ===== Process Manager Functions =====
@@ -1192,7 +1358,7 @@ function initializeWebSocket() {
     websocket = new WebSocket(wsUrl);
     
     websocket.onopen = function(event) {
-        console.log('WebSocket connected');
+        
         showNotification('Connected to server', 'success');
     };
     
@@ -1202,7 +1368,7 @@ function initializeWebSocket() {
     };
     
     websocket.onclose = function(event) {
-        console.log('WebSocket disconnected');
+        
         showNotification('Disconnected from server', 'warning');
         // Attempt to reconnect after 3 seconds
         setTimeout(initializeWebSocket, 3000);
@@ -1232,7 +1398,7 @@ function handleWebSocketMessage(data) {
             handleFeedbackResponse(data.response);
             break;
         default:
-            console.log('Unknown message type:', data.type);
+            
     }
 }
 

@@ -57,7 +57,52 @@ class WebUIServer {
         this.processManager = new ProcessManager();
         this.feedbackResult = null;
         
+        // Path to feedback JSON file
+        this.feedbackJsonPath = path.join(__dirname, 'data', 'feedback.json');
+        
         this.setupRoutes();
+        this.saveFeedbackData();
+    }
+    
+    /**
+     * Save feedback data to JSON file when receiving data from AI
+     */
+    async saveFeedbackData() {
+        try {
+            const feedbackData = {
+                prompt: this.prompt,
+                projectDirectory: this.projectDirectory,
+                timestamp: new Date().toISOString(),
+                feedback: '',
+                commandLogs: []
+            };
+            
+            await fs.ensureDir(path.dirname(this.feedbackJsonPath));
+            await fs.writeJson(this.feedbackJsonPath, feedbackData, { spaces: 2 });
+            console.log('Feedback data saved to JSON file');
+        } catch (error) {
+            console.error('Error saving feedback data:', error);
+        }
+    }
+    
+    /**
+     * Clear feedback data from JSON file after feedback submission
+     */
+    async clearFeedbackData() {
+        try {
+            const emptyData = {
+                prompt: '',
+                projectDirectory: '',
+                timestamp: '',
+                feedback: '',
+                commandLogs: []
+            };
+            
+            await fs.writeJson(this.feedbackJsonPath, emptyData, { spaces: 2 });
+            console.log('Feedback data cleared from JSON file');
+        } catch (error) {
+            console.error('Error clearing feedback data:', error);
+        }
     }
     
     /**
@@ -80,9 +125,18 @@ class WebUIServer {
         this.app.get('/api/config', async (req, res) => {
             try {
                 const config = await this.configManager.loadConfig();
+                
+                // Load feedback data from JSON file
+                let feedbackData = {};
+                try {
+                    feedbackData = await fs.readJson(this.feedbackJsonPath);
+                } catch (error) {
+                    console.log('No existing feedback data found, using defaults');
+                }
+                
                 res.json({
-                    projectDirectory: this.projectDirectory,
-                    prompt: this.prompt,
+                    projectDirectory: feedbackData.projectDirectory || this.projectDirectory,
+                    prompt: feedbackData.prompt || this.prompt,
                     config: config
                 });
             } catch (error) {
@@ -136,6 +190,9 @@ class WebUIServer {
                 if (this.outputFile) {
                     await fs.writeJson(this.outputFile, this.feedbackResult, { spaces: 2 });
                 }
+                
+                // Clear feedback data from JSON file after submission
+                await this.clearFeedbackData();
                 
                 res.json({ success: true });
                 

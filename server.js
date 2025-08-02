@@ -98,9 +98,10 @@ async function launchFeedbackUI(projectDirectory, summary) {
  * @returns {Promise<Object>} Feedback result
  */
 async function interactiveFeedback(projectDirectory, summary) {
-    // Apply firstLine to both parameters
+    // Apply firstLine only to projectDirectory to ensure it's a valid path
+    // Keep summary intact to preserve multi-line content
     const cleanProjectDirectory = firstLine(projectDirectory);
-    const cleanSummary = firstLine(summary);
+    const cleanSummary = summary || 'I implemented the changes you requested.';
     
     return await launchFeedbackUI(cleanProjectDirectory, cleanSummary);
 }
