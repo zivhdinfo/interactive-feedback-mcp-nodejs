@@ -5,6 +5,30 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.1.0] - 2025-01-27
+
+### Added
+- ✅ **Markdown Support**: Integrated Showdown.js for full Markdown rendering in prompt text
+- ✅ **Scroll Functionality**: Added auto-scroll for long prompt content with 300px max height
+- ✅ **Enhanced UI**: Improved user experience with cleaner interface
+
+### Changed
+- 🔧 **Markdown Library**: Replaced previous markdown implementation with Showdown.js
+- 🎨 **Prompt Display**: Updated prompt text rendering to support HTML with Markdown processing
+- 🧹 **Code Cleanup**: Removed all console.log statements for production-ready code
+- 📱 **UI Polish**: Removed markdown hint text for cleaner feedback interface
+
+### Fixed
+- ⚡ **Markdown Rendering**: Fixed issue where Markdown content was displayed as plain text
+- 📜 **Long Content**: Added proper scrolling for lengthy prompt content
+- 🔒 **Production Ready**: Eliminated debug logging for better performance and security
+
+### Technical Details
+- **Showdown.js**: Configured with tables, strikethrough, tasklists, and GitHub code blocks support
+- **DOMPurify**: Maintained for XSS protection in rendered HTML
+- **Highlight.js**: Continued support for syntax highlighting in code blocks
+- **Responsive Design**: Enhanced scroll behavior with smooth scrolling
+
 ## [1.0.1] - 2025-07-31 20:12
 
 ### Changed
