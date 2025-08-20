@@ -8,6 +8,9 @@
  * Version: 1.0.0
  */
 
+// Load environment variables from .env file
+require('dotenv').config();
+
 const fs = require('fs-extra');
 const path = require('path');
 const os = require('os');

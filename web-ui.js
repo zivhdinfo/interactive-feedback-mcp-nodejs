@@ -8,13 +8,19 @@
  * Version: 1.0.0
  */
 
+// Load environment variables from .env file
+require('dotenv').config();
+
 const express = require('express');
 const WebSocket = require('ws');
 const fs = require('fs-extra');
 const path = require('path');
 const { spawn } = require('child_process');
+const multer = require('multer');
+const OpenAI = require('openai');
 const ConfigManager = require('./lib/config-manager');
 const ProcessManager = require('./lib/process-manager');
+const GitIgnoreParser = require('./lib/gitignore-parser');
 
 /**
  * Parse command line arguments
@@ -55,10 +61,99 @@ class WebUIServer {
         // Initialize managers
         this.configManager = new ConfigManager(this.projectDirectory);
         this.processManager = new ProcessManager();
+        this.gitIgnoreParser = new GitIgnoreParser(this.projectDirectory);
         this.feedbackResult = null;
         
         // Path to feedback JSON file
         this.feedbackJsonPath = path.join(__dirname, 'data', 'feedback.json');
+        
+        // Configure multer for file uploads
+        this.upload = multer({
+            storage: multer.memoryStorage(),
+            limits: {
+                fileSize: 25 * 1024 * 1024 // 25MB limit
+            },
+            fileFilter: (req, file, cb) => {
+                // Accept audio files
+                if (file.mimetype.startsWith('audio/')) {
+                    cb(null, true);
+                } else {
+                    cb(new Error('Only audio files are allowed'), false);
+                }
+            }
+        });
+        
+        // POST /api/speech-to-text - Convert audio to text using OpenAI Whisper
+        this.app.post('/api/speech-to-text', this.upload.single('audio'), async (req, res) => {
+            try {
+                if (!req.file) {
+                    return res.status(400).json({ success: false, error: 'No audio file provided' });
+                }
+                
+                if (!this.openai) {
+                    return res.status(500).json({ 
+                        success: false, 
+                        error: 'OpenAI API key not configured. Please set OPENAI_API_KEY environment variable.' 
+                    });
+                }
+                
+                // Create a temporary file from the buffer
+                const tempDir = path.join(__dirname, 'temp');
+                await fs.ensureDir(tempDir);
+                
+                const tempFilePath = path.join(tempDir, `audio_${Date.now()}.webm`);
+                await fs.writeFile(tempFilePath, req.file.buffer);
+                
+                try {
+                    // Call OpenAI Whisper API
+                    const transcription = await this.openai.audio.transcriptions.create({
+                        file: fs.createReadStream(tempFilePath),
+                        model: 'whisper-1',
+                        language: 'vi' // Vietnamese language, can be made configurable
+                    });
+                    
+                    // Clean up temporary file
+                    await fs.remove(tempFilePath);
+                    
+                    res.json({ 
+                        success: true, 
+                        text: transcription.text 
+                    });
+                    
+                } catch (openaiError) {
+                    // Clean up temporary file on error
+                    await fs.remove(tempFilePath).catch(() => {});
+                    
+                    console.error('OpenAI API error:', openaiError);
+                    res.status(500).json({ 
+                        success: false, 
+                        error: 'Failed to transcribe audio: ' + openaiError.message 
+                    });
+                }
+                
+            } catch (error) {
+                console.error('Speech-to-text error:', error);
+                res.status(500).json({ 
+                    success: false, 
+                    error: 'Internal server error: ' + error.message 
+                });
+            }
+        });
+        
+        // Initialize OpenAI client (optional)
+        this.openai = null;
+        if (process.env.OPENAI_API_KEY) {
+            try {
+                this.openai = new OpenAI({
+                    apiKey: process.env.OPENAI_API_KEY
+                });
+                console.log('OpenAI client initialized successfully');
+            } catch (error) {
+                console.warn('Failed to initialize OpenAI client:', error.message);
+            }
+        } else {
+            console.log('OpenAI API key not found. Speech-to-Text feature will be disabled.');
+        }
         
         this.setupRoutes();
         this.saveFeedbackData();
@@ -202,6 +297,66 @@ class WebUIServer {
                 }, 1000);
                 
             } catch (error) {
+                res.status(500).json({ success: false, error: error.message });
+            }
+        });
+
+        // GET /api/browse-files - Browse project files and directories
+        this.app.get('/api/browse-files', async (req, res) => {
+            try {
+                const { path: requestedPath = '' } = req.query;
+                
+                // Normalize and validate the requested path
+                const normalizedPath = requestedPath.replace(/\\/g, '/');
+                const fullPath = path.join(this.projectDirectory, normalizedPath);
+                
+                // Security check: ensure path is within project directory
+                const resolvedPath = path.resolve(fullPath);
+                const resolvedProjectDir = path.resolve(this.projectDirectory);
+                
+                if (!resolvedPath.startsWith(resolvedProjectDir)) {
+                    return res.status(403).json({ 
+                        success: false, 
+                        error: 'Access denied: Path outside project directory' 
+                    });
+                }
+                
+                // Check if path exists
+                if (!await fs.pathExists(fullPath)) {
+                    return res.status(404).json({ 
+                        success: false, 
+                        error: 'Path not found' 
+                    });
+                }
+                
+                // Read directory contents
+                const items = await fs.readdir(fullPath, { withFileTypes: true });
+                
+                // Convert to our format
+                const fileItems = items.map(item => ({
+                    name: item.name,
+                    type: item.isDirectory() ? 'directory' : 'file',
+                    path: path.join(normalizedPath, item.name).replace(/\\/g, '/')
+                }));
+                
+                // Filter using gitignore rules
+                const filteredItems = this.gitIgnoreParser.filterItems(fileItems, normalizedPath);
+                
+                // Sort: directories first, then files, both alphabetically
+                filteredItems.sort((a, b) => {
+                    if (a.type === 'directory' && b.type === 'file') return -1;
+                    if (a.type === 'file' && b.type === 'directory') return 1;
+                    return a.name.localeCompare(b.name);
+                });
+                
+                res.json({
+                    success: true,
+                    currentPath: normalizedPath,
+                    items: filteredItems
+                });
+                
+            } catch (error) {
+                console.error('Error browsing files:', error);
                 res.status(500).json({ success: false, error: error.message });
             }
         });

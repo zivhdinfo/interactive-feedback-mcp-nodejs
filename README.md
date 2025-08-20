@@ -55,6 +55,7 @@ By guiding the assistant to check in with the user instead of branching out into
 - **🧪 Comprehensive Testing**: Includes MCP compliance test suite
 - **⌨️ Keyboard Shortcuts**: Enter to run, Ctrl+Enter to submit
 - **🎛️ Process Management**: Start/stop controls with auto-focus
+- **🎤 Speech-to-Text**: Voice feedback using OpenAI Whisper API
 
 ## Technologies Used
 
@@ -110,7 +111,14 @@ cd interactive-feedback-mcp-nodejs
 # 2. Install dependencies
 npm install
 
-# 3. Test installation
+# 3. Configure Speech-to-Text (Optional)
+# Copy environment template
+cp .env.example .env
+
+# Edit .env file and add your OpenAI API key
+# OPENAI_API_KEY=your_openai_api_key_here
+
+# 4. Test installation
 node server.js
 # Should output: MCP Server listening on stdio
 ```

@@ -96,6 +96,54 @@
                             <span class="cursor-blink">_</span>
                         </div>
                         <textarea id="feedback-textarea" data-lang-key="feedbackPlaceholder" placeholder="Enter your feedback here..." class="terminal-textarea"></textarea>
+                        
+                        <!-- Speech to Text Controls -->
+                        <div class="speech-controls">
+                            <button id="mic-btn" class="terminal-btn mic-btn" title="Record voice feedback">
+                                <span class="mic-icon">🎤</span>
+                                <span id="mic-status" data-lang-key="micReady">Ready</span>
+                            </button>
+                            <div id="recording-indicator" class="recording-indicator hidden">
+                                <span class="recording-dot"></span>
+                                <span data-lang-key="recording">Recording...</span>
+                                <span id="recording-timer">00:00</span>
+                            </div>
+                            <div id="transcription-status" class="transcription-status hidden">
+                                <span data-lang-key="transcribing">Transcribing...</span>
+                            </div>
+                        </div>
+                        
+                        <!-- File Import Controls -->
+                        <div class="file-import-controls">
+                            <div class="file-import-trigger">
+                                <span class="file-import-hint" data-lang-key="fileImportHint">Type @ to browse files</span>
+                            </div>
+                            <div id="file-picker-dropdown" class="file-picker-dropdown hidden">
+                                <div class="file-picker-header">
+                                    <span id="current-path" class="current-path">~/</span>
+                                    <button id="close-file-picker" class="close-btn">×</button>
+                                </div>
+                                <div class="file-picker-content">
+                                    <div id="file-list" class="file-list">
+                                        <!-- File/folder items will be populated here -->
+                                    </div>
+                                </div>
+                                <div class="file-picker-footer">
+                                    <button id="go-back-btn" class="terminal-btn small" data-lang-key="goBack">← Back</button>
+                                    <span id="file-picker-status" class="file-picker-status" data-lang-key="selectFile">Select a file to import</span>
+                                    <span id="multi-select-status" class="multi-select-status hidden">0 files selected • Ctrl+Enter to insert</span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="feedback-options">
+                            <label class="checkbox-container">
+                                <input type="checkbox" id="auto-mcp-request" checked>
+                                <span class="checkmark"></span>
+                                <span id="auto-mcp-label" data-lang-key="autoMcpRequest">Automatically add MCP feedback request</span>
+                            </label>
+                        </div>
+                        
                         <div class="feedback-actions">
                             <button id="submit-feedback-btn" class="terminal-btn success" data-lang-key="submitFeedback">Submit Feedback</button>
                         </div>
