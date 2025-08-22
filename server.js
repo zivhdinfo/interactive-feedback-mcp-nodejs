@@ -9,10 +9,22 @@
  */
 
 // Load environment variables from .env file
-require('dotenv').config();
+// Ensure .env is loaded from the script directory, not the current working directory
+const path = require('path');
+const envPath = path.join(__dirname, '.env');
+const dotenvResult = require('dotenv').config({ path: envPath });
+
+// Debug logging for environment loading
+if (dotenvResult.error) {
+    console.error('❌ Error loading .env file:', dotenvResult.error.message);
+    console.error('   Expected path:', envPath);
+} else {
+    console.log('✅ Environment variables loaded from:', envPath);
+    console.log('   OPENAI_API_KEY exists:', !!process.env.OPENAI_API_KEY);
+    console.log('   WHISPER_LANGUAGE:', process.env.WHISPER_LANGUAGE || 'not set');
+}
 
 const fs = require('fs-extra');
-const path = require('path');
 const os = require('os');
 const crypto = require('crypto');
 const { spawn } = require('child_process');
@@ -101,6 +113,28 @@ async function launchFeedbackUI(projectDirectory, summary) {
  * @returns {Promise<Object>} Feedback result
  */
 async function interactiveFeedback(projectDirectory, summary) {
+    // Validate OPENAI_API_KEY before proceeding
+    if (!process.env.OPENAI_API_KEY) {
+        const error = new Error('OpenAI API key not configured. Please set OPENAI_API_KEY in your .env file.');
+        console.error('❌ API Key Validation Failed:', error.message);
+        console.error('   Expected .env path:', path.join(__dirname, '.env'));
+        console.error('   Current working directory:', process.cwd());
+        console.error('   Script directory (__dirname):', __dirname);
+        throw error;
+    }
+    
+    // Validate API key format
+    const apiKey = process.env.OPENAI_API_KEY;
+    if (!apiKey.startsWith('sk-') || apiKey.length < 20) {
+        const error = new Error('Invalid OpenAI API key format. Key should start with "sk-" and be at least 20 characters long.');
+        console.error('❌ API Key Format Validation Failed:', error.message);
+        console.error('   Key length:', apiKey.length);
+        console.error('   Key prefix:', apiKey.substring(0, 3));
+        throw error;
+    }
+    
+    console.log('✅ API Key validation passed for interactive feedback');
+    
     // Apply firstLine only to projectDirectory to ensure it's a valid path
     // Keep summary intact to preserve multi-line content
     const cleanProjectDirectory = firstLine(projectDirectory);

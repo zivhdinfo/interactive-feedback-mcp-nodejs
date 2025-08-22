@@ -33,6 +33,10 @@ class FeedbackUI {
         this.cursorPosition = 0;
         this.selectedItemIndex = -1;
         this.fileItems = [];
+        this.filteredFileItems = [];
+        this.searchQuery = '';
+        this.selectedFiles = new Set();
+        this.isMultiSelectMode = false;
         
         // Initialize
         this.initializeElements();
@@ -849,11 +853,17 @@ class FeedbackUI {
         
         if (atMatch) {
             this.cursorPosition = cursorPos;
+            this.searchQuery = '';
             this.openFilePicker();
         } else if (this.isFilePickerOpen) {
-            // Close file picker if @ is deleted or cursor moved away
-            const currentAtMatch = textBeforeCursor.match(/(^|\s)@[^\s]*$/);
-            if (!currentAtMatch) {
+            // Check if user is typing after @ symbol
+            const currentAtMatch = textBeforeCursor.match(/(^|\s)@([^\s]*)$/);
+            if (currentAtMatch) {
+                // Extract search query after @
+                this.searchQuery = currentAtMatch[2] || '';
+                this.filterFileList();
+            } else {
+                // Close file picker if @ is deleted or cursor moved away
                 this.closeFilePicker();
             }
         }
@@ -957,12 +967,61 @@ class FeedbackUI {
         this.pathHistory = [];
         this.selectedItemIndex = -1;
         
+        // Initialize search query from current textarea content
+        this.extractSearchQuery();
+        
         if (this.elements.filePickerDropdown) {
             this.elements.filePickerDropdown.classList.remove('hidden');
             this.elements.filePickerDropdown.style.display = 'block';
         }
         
         await this.loadDirectoryContents('');
+    }
+    
+    /**
+     * Extract search query from textarea content after @
+     */
+    extractSearchQuery() {
+        if (!this.elements.feedbackTextarea) {
+            this.searchQuery = '';
+            return;
+        }
+        
+        const text = this.elements.feedbackTextarea.value;
+        const cursorPos = this.elements.feedbackTextarea.selectionStart;
+        
+        // Find the last @ before cursor position
+        let atIndex = -1;
+        for (let i = cursorPos - 1; i >= 0; i--) {
+            if (text[i] === '@') {
+                atIndex = i;
+                break;
+            }
+            // Stop if we hit a space or newline (@ should be the start of a word)
+            if (text[i] === ' ' || text[i] === '\n') {
+                break;
+            }
+        }
+        
+        if (atIndex === -1) {
+            this.searchQuery = '';
+            return;
+        }
+        
+        // Extract text after @ until space, newline, or end of text
+        let endIndex = cursorPos;
+        for (let i = atIndex + 1; i < text.length; i++) {
+            if (text[i] === ' ' || text[i] === '\n') {
+                endIndex = i;
+                break;
+            }
+            if (i === text.length - 1) {
+                endIndex = text.length;
+                break;
+            }
+        }
+        
+        this.searchQuery = text.substring(atIndex + 1, endIndex).trim();
     }
     
     /**
@@ -1021,9 +1080,169 @@ class FeedbackUI {
         
         this.fileItems = items;
         this.selectedItemIndex = -1;
+        
+        // Initialize filtered list and apply current search
+        this.filterFileList();
+    }
+    
+    /**
+     * Filter file list based on search query with improved algorithm
+     */
+    filterFileList() {
+        if (!this.searchQuery || this.searchQuery.trim() === '') {
+            // No search query, show all files
+            this.filteredFileItems = [...this.fileItems];
+        } else {
+            // Filter files based on search query with enhanced matching
+            const query = this.searchQuery.toLowerCase().trim();
+            
+            this.filteredFileItems = this.fileItems.filter(item => {
+                const fileName = item.name.toLowerCase();
+                const fileNameWithoutExt = fileName.split('.')[0];
+                const filePath = item.path.toLowerCase();
+                
+                // Calculate relevance score for better matching
+                let score = 0;
+                
+                // Exact filename match (highest priority)
+                if (fileName === query) {
+                    score += 1000;
+                }
+                
+                // Exact filename without extension match
+                if (fileNameWithoutExt === query) {
+                    score += 900;
+                }
+                
+                // Starts with query (high priority)
+                if (fileName.startsWith(query)) {
+                    score += 800;
+                }
+                
+                // Filename without extension starts with query
+                if (fileNameWithoutExt.startsWith(query)) {
+                    score += 700;
+                }
+                
+                // Contains query in filename
+                if (fileName.includes(query)) {
+                    score += 600;
+                }
+                
+                // Fuzzy matching for typos (check if most characters match)
+                if (this.fuzzyMatch(fileName, query)) {
+                    score += 400;
+                }
+                
+                // Extension matching (for queries like "test.php")
+                if (query.includes('.')) {
+                    const queryParts = query.split('.');
+                    const queryName = queryParts[0];
+                    const queryExt = queryParts[1];
+                    const fileExt = fileName.split('.').pop();
+                    
+                    if (queryExt && fileExt === queryExt) {
+                        score += 500;
+                        // Bonus if name part also matches
+                        if (fileNameWithoutExt.includes(queryName)) {
+                            score += 300;
+                        }
+                    }
+                }
+                
+                // Path matching (lower priority)
+                if (filePath.includes(query)) {
+                    score += 200;
+                }
+                
+                // Acronym matching (e.g., "uc" matches "UserController")
+                if (this.acronymMatch(fileName, query)) {
+                    score += 300;
+                }
+                
+                // Store score for sorting
+                item._searchScore = score;
+                
+                return score > 0;
+            });
+            
+            // Sort by relevance score (highest first)
+            this.filteredFileItems.sort((a, b) => {
+                const scoreA = a._searchScore || 0;
+                const scoreB = b._searchScore || 0;
+                
+                if (scoreA !== scoreB) {
+                    return scoreB - scoreA;
+                }
+                
+                // If scores are equal, sort alphabetically
+                return a.name.localeCompare(b.name);
+            });
+        }
+        
+        // Reset selection index
+        this.selectedItemIndex = -1;
+        
+        // Re-render the filtered list
+        this.renderFilteredFileList();
+    }
+    
+    /**
+     * Fuzzy matching algorithm for typo tolerance
+     */
+    fuzzyMatch(text, pattern) {
+        if (pattern.length === 0) return true;
+        if (text.length === 0) return false;
+        
+        let patternIndex = 0;
+        let textIndex = 0;
+        let matches = 0;
+        
+        while (textIndex < text.length && patternIndex < pattern.length) {
+            if (text[textIndex] === pattern[patternIndex]) {
+                matches++;
+                patternIndex++;
+            }
+            textIndex++;
+        }
+        
+        // Require at least 70% of pattern characters to match
+        return matches >= Math.ceil(pattern.length * 0.7);
+    }
+    
+    /**
+     * Acronym matching (e.g., "uc" matches "UserController")
+     */
+    acronymMatch(text, pattern) {
+        if (pattern.length === 0) return false;
+        
+        // Extract capital letters and first letter
+        const acronym = text.charAt(0).toLowerCase() + 
+                       text.slice(1).replace(/[^A-Z]/g, '').toLowerCase();
+        
+        return acronym.startsWith(pattern) || acronym.includes(pattern);
+    }
+    
+    /**
+     * Render filtered file list
+     */
+    renderFilteredFileList() {
+        if (!this.elements.fileList) return;
+        
         this.elements.fileList.innerHTML = '';
         
-        items.forEach(item => {
+        // Show search info if filtering
+        if (this.searchQuery && this.searchQuery.trim() !== '') {
+            const searchInfo = document.createElement('div');
+            searchInfo.className = 'search-info';
+            searchInfo.innerHTML = `
+                <span class="search-query">Searching for: "${this.searchQuery}"</span>
+                <span class="search-results">${this.filteredFileItems.length} result(s)</span>
+            `;
+            this.elements.fileList.appendChild(searchInfo);
+        }
+        
+        this.filteredFileItems.forEach(item => {
             const itemElement = document.createElement('div');
             itemElement.className = `file-item ${item.type}`;
             
@@ -1035,9 +1254,17 @@ class FeedbackUI {
             const icon = item.type === 'directory' ? '📁' : '📄';
             const checkmark = (item.type === 'file' && this.selectedFiles.has(item.path)) ? '✓ ' : '';
             
+            // Highlight matching text
+            let displayName = item.name;
+            if (this.searchQuery && this.searchQuery.trim() !== '') {
+                const query = this.searchQuery.toLowerCase();
+                const regex = new RegExp(`(${query.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})`, 'gi');
+                displayName = item.name.replace(regex, '<mark>$1</mark>');
+            }
+            
             itemElement.innerHTML = `
                 <span class="file-icon">${icon}</span>
-                <span class="file-name">${checkmark}${item.name}</span>
+                <span class="file-name">${checkmark}${displayName}</span>
             `;
             
             itemElement.addEventListener('click', (e) => {
@@ -1241,6 +1468,10 @@ class FeedbackUI {
             this.pathHistory.push(this.currentPath);
         }
         
+        // Clear search query when navigating to a new directory
+        // This ensures all files in the directory are visible
+        this.searchQuery = '';
+        
         await this.loadDirectoryContents(dirPath);
     }
     
@@ -1248,6 +1479,9 @@ class FeedbackUI {
      * Go back to previous directory
      */
     async goBackDirectory() {
+        // Clear search query when going back to previous directory
+        this.searchQuery = '';
+        
         if (this.pathHistory.length > 0) {
             const previousPath = this.pathHistory.pop();
             await this.loadDirectoryContents(previousPath);

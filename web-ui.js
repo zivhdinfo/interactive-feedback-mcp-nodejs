@@ -9,7 +9,8 @@
  */
 
 // Load environment variables from .env file
-require('dotenv').config();
+// Ensure .env is loaded from the script directory, not the current working directory
+require('dotenv').config({ path: require('path').join(__dirname, '.env') });
 
 const express = require('express');
 const WebSocket = require('ws');
@@ -93,7 +94,8 @@ class WebUIServer {
                 if (!this.openai) {
                     return res.status(500).json({ 
                         success: false, 
-                        error: 'OpenAI API key not configured. Please set OPENAI_API_KEY environment variable.' 
+                        error: 'OpenAI API key not configured. Please check your .env file and ensure OPENAI_API_KEY is set correctly.',
+                        details: 'Speech-to-Text feature requires a valid OpenAI API key to function.'
                     });
                 }
                 
@@ -109,7 +111,7 @@ class WebUIServer {
                     const transcription = await this.openai.audio.transcriptions.create({
                         file: fs.createReadStream(tempFilePath),
                         model: 'whisper-1',
-                        language: 'vi' // Vietnamese language, can be made configurable
+                        language: process.env.WHISPER_LANGUAGE || 'vi' // Use environment variable or default to Vietnamese
                     });
                     
                     // Clean up temporary file
@@ -142,23 +144,92 @@ class WebUIServer {
         
         // Initialize OpenAI client (optional)
         this.openai = null;
-        if (process.env.OPENAI_API_KEY) {
-            try {
-                this.openai = new OpenAI({
-                    apiKey: process.env.OPENAI_API_KEY
-                });
-                console.log('OpenAI client initialized successfully');
-            } catch (error) {
-                console.warn('Failed to initialize OpenAI client:', error.message);
-            }
-        } else {
-            console.log('OpenAI API key not found. Speech-to-Text feature will be disabled.');
-        }
+        this.initializeOpenAIClient();
         
         this.setupRoutes();
         this.saveFeedbackData();
     }
+
+    /**
+     * Check if a port is available
+     * @param {number} port - Port number to check
+     * @returns {Promise<boolean>} True if port is available
+     */
+    async isPortAvailable(port) {
+        return new Promise((resolve) => {
+            const net = require('net');
+            const server = net.createServer();
+            
+            server.listen(port, 'localhost', () => {
+                server.once('close', () => {
+                    resolve(true);
+                });
+                server.close();
+            });
+            
+            server.on('error', () => {
+                resolve(false);
+            });
+        });
+    }
     
+    /**
+     * Find an available port starting from the preferred port
+     * @param {number} startPort - Starting port number
+     * @param {number} maxAttempts - Maximum number of ports to try
+     * @returns {Promise<number>} Available port number
+     */
+    async findAvailablePort(startPort = 3636, maxAttempts = 10) {
+        for (let i = 0; i < maxAttempts; i++) {
+            const port = startPort + i;
+            if (await this.isPortAvailable(port)) {
+                return port;
+            }
+        }
+        throw new Error(`No available port found in range ${startPort}-${startPort + maxAttempts - 1}`);
+    }
+    
+    /**
+     * Initialize OpenAI client with proper error handling and validation
+     */
+    initializeOpenAIClient() {
+        const apiKey = process.env.OPENAI_API_KEY;
+        
+        if (!apiKey) {
+            console.log('⚠️  OpenAI API key not found in environment variables.');
+            console.log('   Speech-to-Text feature will be disabled.');
+            console.log('   To enable this feature, set OPENAI_API_KEY in your .env file.');
+            return;
+        }
+        
+        // Validate API key format
+        if (!apiKey.startsWith('sk-')) {
+            console.error('❌ Invalid OpenAI API key format. API key should start with "sk-"');
+            console.log('   Please check your OPENAI_API_KEY in the .env file.');
+            return;
+        }
+        
+        if (apiKey.length < 20) {
+            console.error('❌ OpenAI API key appears to be too short. Please verify your API key.');
+            return;
+        }
+        
+        try {
+            this.openai = new OpenAI({
+                apiKey: apiKey
+            });
+            
+            console.log('✅ OpenAI client initialized successfully');
+            console.log(`   API Key: ${apiKey.substring(0, 10)}...${apiKey.substring(apiKey.length - 4)}`);
+            console.log(`   Speech Language: ${process.env.WHISPER_LANGUAGE || 'vi (default)'}`);
+            
+        } catch (error) {
+            console.error('❌ Failed to initialize OpenAI client:', error.message);
+            console.log('   Please verify your OPENAI_API_KEY is correct.');
+            this.openai = null;
+        }
+    }
+
     /**
      * Save feedback data to JSON file when receiving data from AI
      */
@@ -368,22 +439,33 @@ class WebUIServer {
      * @returns {Promise<number>} Port number
      */
     async start() {
-        return new Promise((resolve, reject) => {
-            this.server = this.app.listen(3636, 'localhost', (error) => {
-                if (error) {
-                    reject(error);
-                    return;
-                }
-                
-                this.port = this.server.address().port;
-                console.log(`Web UI Server running at http://localhost:${this.port}`);
-                
-                // Setup WebSocket server
-                this.setupWebSocket();
-                
-                resolve(this.port);
+        try {
+            // Find an available port starting from 3636
+            const availablePort = await this.findAvailablePort(3636, 10);
+            
+            return new Promise((resolve, reject) => {
+                this.server = this.app.listen(availablePort, 'localhost', (error) => {
+                    if (error) {
+                        reject(error);
+                        return;
+                    }
+                    
+                    this.port = this.server.address().port;
+                    
+                    if (this.port !== 3636) {
+                        console.log(`⚠️  Port 3636 was occupied, using alternative port: ${this.port}`);
+                    }
+                    console.log(`✅ Web UI Server running at http://localhost:${this.port}`);
+                    
+                    // Setup WebSocket server
+                    this.setupWebSocket();
+                    
+                    resolve(this.port);
+                });
             });
-        });
+        } catch (error) {
+            throw new Error(`Failed to start server: ${error.message}`);
+        }
     }
     
     /**
